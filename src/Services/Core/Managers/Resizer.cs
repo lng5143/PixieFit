@@ -6,9 +6,12 @@ namespace PixieFit.Core.Managers;
 
 public class Resizer
 {
-    public Bitmap picture { get; set; }
-    private double[][] energy { get; set; }
-    private long[][] color { get; set; }
+    private Bitmap picture { get; set; }
+    private double[,] energy { get; set; }
+    private long[,] color { get; set; }
+    private DirectedEdge2D[,] edgeTo { get; set; }
+    private double[,] distTo { get; set; }
+    private bool isTransposed { get; set; }
 
     public Resizer()
     {
@@ -20,8 +23,11 @@ public class Resizer
         MemoryStream stream = new MemoryStream(request.PhotoBytes);
         picture = new Bitmap(stream);
 
-        InitColorArray(Width(), Height());
-        InitEnergyArray(Width(), Height());
+        var initWidth = picture.Width;
+        var initHeight = picture.Height;
+
+        InitColorArray(initHeight, initHeight);
+        InitEnergyArray(initWidth, initHeight);
 
         return null;
     }
@@ -32,7 +38,7 @@ public class Resizer
         {
             for (int j = 0; j < height; j++)
             {
-                energy[i][j] = Energy(i, j);
+                energy[i,j] = Energy(i, j);
             }
         }
     }
@@ -43,7 +49,7 @@ public class Resizer
         {
             for (int j = 0; j < height; j++)
             {
-                color[i][j] = picture.GetPixel(i, j).ToArgb();
+                color[i,j] = picture.GetPixel(i, j).ToArgb();
             }
         }
     }
@@ -51,13 +57,13 @@ public class Resizer
     // width of current picture
     private int Width()
     {
-        return picture.Width;
+        return color.GetLength(0);
     }
 
     // height of current picture 
     private int Height()
     {
-        return picture.Height;
+        return color.GetLength(1);
     }
 
     private double Energy(int x, int y)
@@ -73,10 +79,10 @@ public class Resizer
         }
         else
         {
-            long leftARGB = color[x - 1][y];
-            long rightARGB = color[x + 1][y];
-            long upARGB = color[x][y - 1];
-            long downARGB = color[x][y + 1];
+            long leftARGB = color[x - 1, y];
+            long rightARGB = color[x + 1, y];
+            long upARGB = color[x, y - 1];
+            long downARGB = color[x, y + 1];
 
             double xDiffSquared = CalculateColorDiffSquared(leftARGB, rightARGB);
             double yDiffSquared = CalculateColorDiffSquared(upARGB, downARGB);
@@ -97,6 +103,82 @@ public class Resizer
 
         return Math.Pow(r1 - r2, 2) + Math.Pow(g1 - g2, 2) + Math.Pow(b1 - b2, 2);
     }
+
+    private int[] FindVerticalSeam()
+    {
+        return null;
+    }
+
+    private int[] FindHorizontalSeam()
+    {
+        return null;
+    }
+
+    private void RemoveVerticalSeam()
+    {
+
+    }
+
+    private void RemoveHorizontalSeam()
+    {
+
+    }
+
+    private void transposeEnergyMatrix()
+    {
+        int width = energy.GetLength(0);
+        int height = energy.GetLength(1);
+        double[,] tranEnergy = new double[height, width];
+
+        for (int i = 0; i < width - 1; i++)
+        {
+            for (int j = 0; j < height - 1; j++)
+            {
+                tranEnergy[j,i] = energy[i,j];
+            }
+        }
+
+        energy = tranEnergy;
+    }
+
+    private void transposeColorMatrix()
+    {
+        int width = color.GetLength(0);
+        int height = color.GetLength(1);
+        long[,] tranColor = new long[height, width];
+
+        for (int i = 0; i < width - 1; i++)
+        {
+            for (int j = 0; j < height - 1; j++)
+            {
+                tranColor[j,i] = color[i,j];
+            }
+        }
+    }
+
+    private void Relax(DirectedEdge2D e)
+    {
+        if (distTo[e.xTo, e.yTo] > distTo[e.xFrom, e.yFrom] + e.Weight)
+        {
+            distTo[e.xTo, e.yTo] = distTo[e.xFrom, e.yFrom] + e.Weight;
+            edgeTo[e.xTo, e.yTo] = e;
+        }
+    }
+
+    private double[,] InitDistTo()
+    {
+        double[,] distTo = new double[Width(), Height()];
+
+        for (int i = 0; i < Width() - 1; i++)
+        {
+            for (int j = 0; j < Height() - 1; j++)
+            {
+                distTo[i,j] = Double.PositiveInfinity;
+            }
+            distTo[i,0] = 0.0;
+        }
+        return distTo;
+    }
     
 }
 
@@ -106,7 +188,7 @@ public class DirectedEdge2D
     public int yFrom { get; set; }
     public int xTo { get; set; }
     public int yTo { get; set; }
-    public double weight { get; set; }
+    public double Weight { get; set; }
 
     public DirectedEdge2D(int xFrom, int yFrom, int xTo, int yTo, double weight)
     {
@@ -114,6 +196,6 @@ public class DirectedEdge2D
         this.yFrom = yFrom;
         this.xTo = xTo;
         this.yTo = yTo;
-        this.weight = weight;
+        Weight = weight;
     }
 }

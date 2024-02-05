@@ -29,6 +29,8 @@ public class Resizer
         InitColorArray(initHeight, initHeight);
         InitEnergyArray(initWidth, initHeight);
 
+        isTransposed = false;
+
         return null;
     }
 
@@ -106,25 +108,153 @@ public class Resizer
 
     private int[] FindVerticalSeam()
     {
-        return null;
+        distTo = InitDistTo();
+
+        for (int i = 0; i < Width() - 1; i++)
+        {
+            for (int j = 0; j < Height() - 1; j++)
+            {
+                if (i == 0 && j < Height() -2)
+                {
+                    Relax(new DirectedEdge2D(i, j, i + 1, j, energy[i+1, j]));
+                    Relax(new DirectedEdge2D(i, j, i + 1, j + 1, energy[i+1, j+1]));
+                }
+                else if(i == Width() - 1 && j < Height() - 2)
+                {
+                    Relax(new DirectedEdge2D(i, j, i + 1, j, energy[i+1, j]));
+                    Relax(new DirectedEdge2D(i, j, i + 1, j - 1, energy[i+1, j-1]));
+                }
+                else if (j < Height() - 2)
+                {
+                    Relax(new DirectedEdge2D(i, j, i + 1, j, energy[i+1, j]));
+                    Relax(new DirectedEdge2D(i, j, i + 1, j + 1, energy[i+1, j+1]));
+                    Relax(new DirectedEdge2D(i, j, i + 1, j - 1, energy[i+1, j-1]));
+                }
+            }
+        }
+
+        int endPoint = GetShortShortestPathEndpoint();
+
+        return GetShortestPath(endPoint);
+    }
+
+    private int GetShortShortestPathEndpoint()
+    {
+        double minLength = Double.PositiveInfinity;
+        int endPoint = 0;
+
+        for (int i = 0; i < Width() - 1; i++)
+        {
+            double length = distTo[i, Height() - 1];
+            if (length < minLength)
+            {
+                minLength = length;
+                endPoint = i;
+            }
+        }
+
+        return endPoint;
+    }
+
+    private int[] GetShortestPath(int v)
+    {
+        int[] result = new int[Height()];
+        int end = v;
+
+        for (int i = 0; i < result.Length; i++)
+        {
+            DirectedEdge2D edge = edgeTo[v, Height() - 1 - i];
+            result[result.Length - 1 - i] = edge.xTo;
+            end = result[result.Length - 1 - i];
+        }
+
+        return result;
     }
 
     private int[] FindHorizontalSeam()
     {
-        return null;
+        if (!isTransposed)
+        {
+            TransposeEnergyMatrix();
+            TransposeColorMatrix();
+            isTransposed = true;
+        }
+
+        return FindVerticalSeam();
     }
 
-    private void RemoveVerticalSeam()
+    private void RemoveVerticalSeam(int[] seam)
     {
+        if (seam == null)
+            throw new ArgumentException("Cannot remove seam because seam is null");
 
+        int newWidth = Width() - 1;
+        int newHeigth = Height() - 1;
+
+        // reset color[,]
+        long[,] newColor = new long[newWidth, newHeigth];
+
+        // traverse per row
+        for (int i = 0; i < newHeigth - 1; i++)
+        {
+            for (int j = 0; j < newWidth - 1; j++)
+            {
+                if (j >= seam[i])
+                {
+                    newColor[j,i] = color[j + 1, i];
+                }
+                else
+                {
+                    newColor[j,i] = color[j,i];
+                }
+            }
+        }
+
+        color = newColor;
+
+        // reset energy[][]
+        double[,] newEnergy = new double[newWidth,newHeigth];
+
+        // traverse per row
+        for (int i = 0; i < newHeigth - 1; i++)
+        {
+            for (int j = 0; i < newWidth - 1; j++)
+            {
+                if (j >= seam[i]) {
+                    newEnergy[j,i] = energy[j + 1, i];
+                }
+                else
+                {
+                    newEnergy[j,i] = energy[j,i];
+                }
+            }
+
+            for (int y = 0; y < seam.Length; y++)
+            {
+                newEnergy[seam[y] - 1,y] = Energy(seam[y] - 1, y);
+                newEnergy[seam[y], y] = Energy(seam[y], y);
+            }
+        }
+
+        energy = newEnergy;
     }
 
-    private void RemoveHorizontalSeam()
+    private void RemoveHorizontalSeam(int[] seam)
     {
+        if (seam == null)
+            throw new ArgumentException("Cannot remove seam because seam is null");
 
+        if (!isTransposed)
+        {
+            TransposeColorMatrix();
+            TransposeColorMatrix();
+            isTransposed = true;
+        }
+
+        RemoveVerticalSeam(seam);
     }
 
-    private void transposeEnergyMatrix()
+    private void TransposeEnergyMatrix()
     {
         int width = energy.GetLength(0);
         int height = energy.GetLength(1);
@@ -141,7 +271,7 @@ public class Resizer
         energy = tranEnergy;
     }
 
-    private void transposeColorMatrix()
+    private void TransposeColorMatrix()
     {
         int width = color.GetLength(0);
         int height = color.GetLength(1);

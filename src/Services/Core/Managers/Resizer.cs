@@ -5,7 +5,12 @@ using System.Reflection;
 
 namespace PixieFit.Core.Managers;
 
-public class Resizer
+public interface IResizer
+{
+    byte[] Resize(ResizingRequest request);
+}
+
+public class Resizer : IResizer
 {
     private Bitmap picture { get; set; }
     private double[,] energy { get; set; }

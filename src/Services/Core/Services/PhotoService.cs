@@ -3,12 +3,17 @@ using PixieFit.Core.Models;
 
 namespace PixieFit.Core.Services;
 
-public class PhotoService 
+public interface IPhotoService
 {
-    Resizer _resizer;
+    byte[] Resize(ResizingRequest request);
+}
+
+public class PhotoService : IPhotoService
+{
+    IResizer _resizer;
 
     public PhotoService(
-        Resizer resizer
+        IResizer resizer
     )
     {
         _resizer = resizer;

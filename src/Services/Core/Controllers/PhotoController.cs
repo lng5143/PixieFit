@@ -8,10 +8,10 @@ namespace PixieFit.Core.Controllers;
 [Route("api/[controller]")]
 public class PhotoController : Controller
 {
-    PhotoService _photoService;
+    IPhotoService _photoService;
 
     public PhotoController(
-        PhotoService photoService
+        IPhotoService photoService
     )
     {
         _photoService = photoService;
@@ -21,6 +21,7 @@ public class PhotoController : Controller
     [Route("resize")]
     public async Task<IActionResult> Resize(ResizingRequest request)
     {
-        return null;
+        var byteResult = _photoService.Resize(request);
+        return File(byteResult, "image/jpeg");
     }
 }

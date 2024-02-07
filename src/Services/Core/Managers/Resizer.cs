@@ -1,5 +1,6 @@
 using PixieFit.Core.Models;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.Reflection;
 
 namespace PixieFit.Core.Managers;
@@ -20,6 +21,33 @@ public class Resizer
 
     public byte[] Resize(ResizingRequest request)
     {
+        Initialize(request);
+
+        var vSeamCount = (int)Math.Round(Width() * request.Width);
+        var hSeamCount = (int)Math.Round(Height() * request.Height);
+
+        for (int i = 0; i < vSeamCount; i++)
+        {
+            int[] seam = FindVerticalSeam();
+            RemoveVerticalSeam(seam);
+        }
+
+        for (int i = 0; i < hSeamCount; i++)
+        {
+            int[] seam = FindHorizontalSeam();
+            RemoveHorizontalSeam(seam);
+        }
+
+        var processPicture = Picture();
+        using (var stream = new MemoryStream())
+        {
+            processPicture.Save(stream, ImageFormat.Jpeg);
+            return stream.ToArray();
+        }
+    }
+
+    public void Initialize (ResizingRequest request)
+    {
         MemoryStream stream = new MemoryStream(request.PhotoBytes);
         picture = new Bitmap(stream);
 
@@ -30,11 +58,21 @@ public class Resizer
         InitEnergyArray(initWidth, initHeight);
 
         isTransposed = false;
-
-        return null;
     }
 
-    private void InitEnergyArray(int width, int height)
+    public Bitmap Picture() {
+        var picture = new Bitmap(Width(), Height());
+        for (int i = 0; i < Width(); i++)
+        {
+            for (int j = 0; j < Height(); j++)
+            {
+                picture.SetPixel(i, j, Color.FromArgb((int)color[i,j]));
+            }
+        }
+        return picture;
+    }
+
+    public void InitEnergyArray(int width, int height)
     {
         for (int i = 0; i < width; i++)
         {
@@ -45,7 +83,7 @@ public class Resizer
         }
     }
 
-    private void InitColorArray(int width, int height)
+    public void InitColorArray(int width, int height)
     {
         for (int i = 0; i < width; i++)
         {
@@ -57,18 +95,18 @@ public class Resizer
     }
 
     // width of current picture
-    private int Width()
+    public int Width()
     {
         return color.GetLength(0);
     }
 
     // height of current picture 
-    private int Height()
+    public int Height()
     {
         return color.GetLength(1);
     }
 
-    private double Energy(int x, int y)
+    public double Energy(int x, int y)
     {
         if (
                 x == 0 // outer left col
@@ -93,7 +131,7 @@ public class Resizer
         }
     }
 
-    private double CalculateColorDiffSquared(long argb1, long argb2)
+    public double CalculateColorDiffSquared(long argb1, long argb2)
     {
         var r1 = Convert.ToInt16((argb1 >> 16) & 0xFF);
         var g1 = Convert.ToInt16((argb1 >> 8) & 0xFF);
@@ -106,7 +144,7 @@ public class Resizer
         return Math.Pow(r1 - r2, 2) + Math.Pow(g1 - g2, 2) + Math.Pow(b1 - b2, 2);
     }
 
-    private int[] FindVerticalSeam()
+    public int[] FindVerticalSeam()
     {
         distTo = InitDistTo();
 
@@ -138,25 +176,25 @@ public class Resizer
         return GetShortestPath(endPoint);
     }
 
-    private int GetShortShortestPathEndpoint()
+    public int GetShortShortestPathEndpoint()
     {
-        double minLength = Double.PositiveInfinity;
-        int endPoint = 0;
+        double minPathLength = double.PositiveInfinity;
+        int shortestPathEndpoint = 0;
 
         for (int i = 0; i < Width() - 1; i++)
         {
-            double length = distTo[i, Height() - 1];
-            if (length < minLength)
+            double pathLength = distTo[i, Height() - 1];
+            if (pathLength < minPathLength)
             {
-                minLength = length;
-                endPoint = i;
+                minPathLength = pathLength;
+                shortestPathEndpoint = i;
             }
         }
 
-        return endPoint;
+        return shortestPathEndpoint;
     }
 
-    private int[] GetShortestPath(int v)
+    public int[] GetShortestPath(int v)
     {
         int[] result = new int[Height()];
         int end = v;
@@ -171,7 +209,7 @@ public class Resizer
         return result;
     }
 
-    private int[] FindHorizontalSeam()
+    public int[] FindHorizontalSeam()
     {
         if (!isTransposed)
         {
@@ -183,7 +221,7 @@ public class Resizer
         return FindVerticalSeam();
     }
 
-    private void RemoveVerticalSeam(int[] seam)
+    public void RemoveVerticalSeam(int[] seam)
     {
         if (seam == null)
             throw new ArgumentException("Cannot remove seam because seam is null");
@@ -239,7 +277,7 @@ public class Resizer
         energy = newEnergy;
     }
 
-    private void RemoveHorizontalSeam(int[] seam)
+    public void RemoveHorizontalSeam(int[] seam)
     {
         if (seam == null)
             throw new ArgumentException("Cannot remove seam because seam is null");
@@ -254,7 +292,7 @@ public class Resizer
         RemoveVerticalSeam(seam);
     }
 
-    private void TransposeEnergyMatrix()
+    public void TransposeEnergyMatrix()
     {
         int width = energy.GetLength(0);
         int height = energy.GetLength(1);
@@ -271,7 +309,7 @@ public class Resizer
         energy = tranEnergy;
     }
 
-    private void TransposeColorMatrix()
+    public void TransposeColorMatrix()
     {
         int width = color.GetLength(0);
         int height = color.GetLength(1);
@@ -286,7 +324,7 @@ public class Resizer
         }
     }
 
-    private void Relax(DirectedEdge2D e)
+    public void Relax(DirectedEdge2D e)
     {
         if (distTo[e.xTo, e.yTo] > distTo[e.xFrom, e.yFrom] + e.Weight)
         {
@@ -295,7 +333,7 @@ public class Resizer
         }
     }
 
-    private double[,] InitDistTo()
+    public double[,] InitDistTo()
     {
         double[,] distTo = new double[Width(), Height()];
 

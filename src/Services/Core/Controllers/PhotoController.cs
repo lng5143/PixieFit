@@ -4,6 +4,8 @@ using PixieFit.Core.Services;
 
 namespace PixieFit.Core.Controllers;
 
+[ApiController]
+[Route("api/[controller]")]
 public class PhotoController : Controller
 {
     PhotoService _photoService;
@@ -16,6 +18,7 @@ public class PhotoController : Controller
     }
 
     [HttpPost]
+    [Route("resize")]
     public async Task<IActionResult> Resize(ResizingRequest request)
     {
         return null;

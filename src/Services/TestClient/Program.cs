@@ -2,7 +2,7 @@
 using System.Text.Json;
 using PixieFit.Core.Models;
 
-byte[] imageBytes = File.ReadAllBytes("image.jpeg");
+byte[] imageBytes = File.ReadAllBytes("/Users/macbook/Documents/Projects/PixieFit/src/Services/TestClient/image.jpeg");
 
 var request = new ResizingRequest
 {

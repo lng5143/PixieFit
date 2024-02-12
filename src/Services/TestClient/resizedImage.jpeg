@@ -1,7 +1,13 @@
-System.InvalidOperationException: Unable to resolve service for type 'PixieFit.Core.Services.PhotoService' while attempting to activate 'PixieFit.Core.Controllers.PhotoController'.
-   at Microsoft.Extensions.DependencyInjection.ActivatorUtilities.GetService(IServiceProvider sp, Type type, Type requiredBy, Boolean isDefaultParameterRequired)
-   at lambda_method8(Closure, IServiceProvider, Object[])
-   at Microsoft.AspNetCore.Mvc.Controllers.ControllerFactoryProvider.<>c__DisplayClass6_0.<CreateControllerFactory>g__CreateController|0(ControllerContext controllerContext)
+System.NullReferenceException: Object reference not set to an instance of an object.
+   at PixieFit.Core.Managers.Resizer.InitColorArray(Int32 width, Int32 height) in /Users/macbook/Documents/Projects/PixieFit/src/Services/Core/Managers/Resizer.cs:line 104
+   at PixieFit.Core.Managers.Resizer.Initialize(ResizingRequest request) in /Users/macbook/Documents/Projects/PixieFit/src/Services/Core/Managers/Resizer.cs:line 68
+   at PixieFit.Core.Managers.Resizer.Resize(ResizingRequest request) in /Users/macbook/Documents/Projects/PixieFit/src/Services/Core/Managers/Resizer.cs:line 33
+   at PixieFit.Core.Services.PhotoService.Resize(ResizingRequest request) in /Users/macbook/Documents/Projects/PixieFit/src/Services/Core/Services/PhotoService.cs:line 24
+   at PixieFit.Core.Controllers.PhotoController.Resize(ResizingRequest request) in /Users/macbook/Documents/Projects/PixieFit/src/Services/Core/Controllers/PhotoController.cs:line 24
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ActionMethodExecutor.TaskOfIActionResultExecutor.Execute(ActionContext actionContext, IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeActionMethodAsync>g__Awaited|12_0(ControllerActionInvoker invoker, ValueTask`1 actionResultValueTask)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeNextActionFilterAsync>g__Awaited|10_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Rethrow(ActionExecutedContextSealed context)
    at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
    at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.InvokeInnerFilterAsync()
 --- End of stack trace from previous location ---

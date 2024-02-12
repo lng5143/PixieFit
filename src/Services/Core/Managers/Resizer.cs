@@ -26,6 +26,10 @@ public class Resizer : IResizer
 
     public byte[] Resize(ResizingRequest request)
     {
+        Console.WriteLine(request.Height);
+        Console.WriteLine(request.Width);
+        Console.WriteLine(request.PhotoBytes.Length);
+
         Initialize(request);
 
         var vSeamCount = (int)Math.Round(Width() * request.Width);
@@ -55,11 +59,13 @@ public class Resizer : IResizer
     {
         MemoryStream stream = new MemoryStream(request.PhotoBytes);
         picture = new Bitmap(stream);
+        Console.WriteLine(picture.Height);
+        Console.WriteLine(picture.Width);
 
         var initWidth = picture.Width;
         var initHeight = picture.Height;
 
-        InitColorArray(initHeight, initHeight);
+        InitColorArray(initWidth, initHeight);
         InitEnergyArray(initWidth, initHeight);
 
         isTransposed = false;
@@ -79,6 +85,8 @@ public class Resizer : IResizer
 
     public void InitEnergyArray(int width, int height)
     {
+        energy = new double[width, height];
+        
         for (int i = 0; i < width; i++)
         {
             for (int j = 0; j < height; j++)
@@ -90,6 +98,10 @@ public class Resizer : IResizer
 
     public void InitColorArray(int width, int height)
     {
+        Console.WriteLine(picture.GetPixel(1199, 629).ToArgb());
+
+        color = new long[width, height];
+        
         for (int i = 0; i < width; i++)
         {
             for (int j = 0; j < height; j++)
@@ -152,26 +164,27 @@ public class Resizer : IResizer
     public int[] FindVerticalSeam()
     {
         distTo = InitDistTo();
+        edgeTo = new DirectedEdge2D[Width(), Height()];
 
-        for (int i = 0; i < Width() - 1; i++)
+        for (int i = 0; i < Width(); i++)
         {
             for (int j = 0; j < Height() - 1; j++)
             {
-                if (i == 0 && j < Height() -2)
+                if (i == 0)
                 {
-                    Relax(new DirectedEdge2D(i, j, i + 1, j, energy[i+1, j]));
-                    Relax(new DirectedEdge2D(i, j, i + 1, j + 1, energy[i+1, j+1]));
+                    Relax(new DirectedEdge2D(i, j, i, j + 1, energy[i, j + 1]));
+                    Relax(new DirectedEdge2D(i, j, i + 1, j + 1, energy[i + 1, j + 1]));
                 }
-                else if(i == Width() - 1 && j < Height() - 2)
+                else if(i == Width() - 1)
                 {
-                    Relax(new DirectedEdge2D(i, j, i + 1, j, energy[i+1, j]));
-                    Relax(new DirectedEdge2D(i, j, i + 1, j - 1, energy[i+1, j-1]));
+                    Relax(new DirectedEdge2D(i, j, i, j + 1, energy[i, j + 1]));
+                    Relax(new DirectedEdge2D(i, j, i - 1, j + 1, energy[i - 1, j + 1]));
                 }
-                else if (j < Height() - 2)
+                else
                 {
-                    Relax(new DirectedEdge2D(i, j, i + 1, j, energy[i+1, j]));
-                    Relax(new DirectedEdge2D(i, j, i + 1, j + 1, energy[i+1, j+1]));
-                    Relax(new DirectedEdge2D(i, j, i + 1, j - 1, energy[i+1, j-1]));
+                    Relax(new DirectedEdge2D(i, j, i, j + 1, energy[i, j + 1]));
+                    Relax(new DirectedEdge2D(i, j, i - 1, j + 1, energy[i - 1, j + 1]));
+                    Relax(new DirectedEdge2D(i, j, i + 1, j + 1, energy[i + 1, j + 1]));
                 }
             }
         }
@@ -202,14 +215,16 @@ public class Resizer : IResizer
     public int[] GetShortestPath(int v)
     {
         int[] result = new int[Height()];
-        int end = v;
+        int xTo = v;
 
-        for (int i = 0; i < result.Length; i++)
+        for (int i = result.Length - 1; i > 0; i--) // iterate to the second row
         {
-            DirectedEdge2D edge = edgeTo[v, Height() - 1 - i];
-            result[result.Length - 1 - i] = edge.xTo;
-            end = result[result.Length - 1 - i];
+            var edge = edgeTo[xTo, i];
+            result[i] = xTo;
+            xTo = edge.xFrom;
         }
+
+        result[0] = xTo;
 
         return result;
     }
@@ -238,9 +253,9 @@ public class Resizer : IResizer
         long[,] newColor = new long[newWidth, newHeigth];
 
         // traverse per row
-        for (int i = 0; i < newHeigth - 1; i++)
+        for (int i = 0; i < newHeigth; i++)
         {
-            for (int j = 0; j < newWidth - 1; j++)
+            for (int j = 0; j < newWidth; j++)
             {
                 if (j >= seam[i])
                 {
@@ -259,9 +274,9 @@ public class Resizer : IResizer
         double[,] newEnergy = new double[newWidth,newHeigth];
 
         // traverse per row
-        for (int i = 0; i < newHeigth - 1; i++)
+        for (int i = 0; i < newHeigth; i++)
         {
-            for (int j = 0; i < newWidth - 1; j++)
+            for (int j = 0; j < newWidth; j++)
             {
                 if (j >= seam[i]) {
                     newEnergy[j,i] = energy[j + 1, i];
@@ -342,16 +357,17 @@ public class Resizer : IResizer
     {
         double[,] distTo = new double[Width(), Height()];
 
-        for (int i = 0; i < Width() - 1; i++)
+        for (int i = 0; i < Width(); i++)
         {
-            for (int j = 0; j < Height() - 1; j++)
+            for (int j = 0; j < Height(); j++)
             {
-                distTo[i,j] = Double.PositiveInfinity;
+                distTo[i,j] = double.PositiveInfinity;
             }
             distTo[i,0] = 0.0;
         }
         return distTo;
     }
+    
     
 }
 

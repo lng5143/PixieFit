@@ -3,3 +3,7 @@ src/Services/Core/bin
 TestProject
 src/Services/TestClient/obj
 src/Services/TestClient/bin
+# src/Services/TestClient/resizedImage.jpeg
+.vscode
+.idea
+src/Services/TestClient/resizedImage.jpeg

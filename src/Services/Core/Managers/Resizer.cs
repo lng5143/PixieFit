@@ -247,7 +247,7 @@ public class Resizer : IResizer
             throw new ArgumentException("Cannot remove seam because seam is null");
 
         int newWidth = Width() - 1;
-        int newHeigth = Height() - 1;
+        int newHeigth = Height();
 
         // reset color[,]
         long[,] newColor = new long[newWidth, newHeigth];

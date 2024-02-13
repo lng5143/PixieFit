@@ -348,6 +348,8 @@ public class Resizer : IResizer
                 tranColor[j,i] = color[i,j];
             }
         }
+
+        color = tranColor;
     }
 
     public void Relax(DirectedEdge2D e)

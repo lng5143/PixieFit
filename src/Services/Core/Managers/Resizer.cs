@@ -224,7 +224,13 @@ public class Resizer : IResizer
             xTo = edge.xFrom;
         }
 
-        result[0] = xTo;
+        if (xTo == 0)
+            result[0] = xTo + 1;
+        // this probably won't happen because relaxing is from left to right, so there will never be top right side-v in the seam
+        else if (xTo == Width() - 1) 
+            result[0] = xTo - 1;
+        else
+            result[0] = xTo;
 
         return result;
     }

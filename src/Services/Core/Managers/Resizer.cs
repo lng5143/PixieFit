@@ -324,9 +324,9 @@ public class Resizer : IResizer
         int height = energy.GetLength(1);
         double[,] tranEnergy = new double[height, width];
 
-        for (int i = 0; i < width - 1; i++)
+        for (int i = 0; i < width; i++)
         {
-            for (int j = 0; j < height - 1; j++)
+            for (int j = 0; j < height; j++)
             {
                 tranEnergy[j,i] = energy[i,j];
             }
@@ -341,9 +341,9 @@ public class Resizer : IResizer
         int height = color.GetLength(1);
         long[,] tranColor = new long[height, width];
 
-        for (int i = 0; i < width - 1; i++)
+        for (int i = 0; i < width; i++)
         {
-            for (int j = 0; j < height - 1; j++)
+            for (int j = 0; j < height; j++)
             {
                 tranColor[j,i] = color[i,j];
             }

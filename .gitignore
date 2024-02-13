@@ -1,5 +1,7 @@
 src/Services/Core/obj
 src/Services/Core/bin
+src/Services/Web/obj
+src/Services/Web/bin
 TestProject
 src/Services/TestClient/obj
 src/Services/TestClient/bin

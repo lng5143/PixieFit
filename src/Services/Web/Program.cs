@@ -4,8 +4,12 @@ builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
 
-app.MapControllers();
-app.UseRouting();
+// app.MapControllers();
+app.UseStaticFiles();
+// app.UseRouting();
 
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();

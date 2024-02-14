@@ -9,3 +9,4 @@ src/Services/TestClient/bin
 .vscode
 .idea
 src/Services/TestClient/resizedImage.jpeg
+src/Services/Web/node_modules

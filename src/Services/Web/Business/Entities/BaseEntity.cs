@@ -1,4 +1,4 @@
-namespace PixieFit.Web.Entities;
+namespace PixieFit.Web.Business.Entities;
 
 public class BaseEntity
 {

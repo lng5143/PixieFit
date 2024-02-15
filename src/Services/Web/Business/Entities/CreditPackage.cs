@@ -1,10 +1,9 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace PixieFit.Web.Entities;
+namespace PixieFit.Web.Business.Entities;
 
 public class CreditPackage : BaseEntity
 {
-    // public string Name { get; set; }
     [Required]
     public int Credits { get; set; }
     [Required]

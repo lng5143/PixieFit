@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace PixieFit.Web.Entities;
+namespace PixieFit.Web.Business.Entities;
 
 public class User : BaseEntity
 {
@@ -12,5 +12,5 @@ public class User : BaseEntity
 
     public string FirstName { get; set; }
     public string LastName { get; set; }
-    
+    public long Credits { get; set; }
 }

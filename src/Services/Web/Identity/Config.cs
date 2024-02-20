@@ -21,8 +21,8 @@ public class Config
         {
             new Client
             {
-                ClientId = "web"
-
+                ClientId = "web",
+                RedirectUris = { "https://localhost:5261" },
             }
         };
 }

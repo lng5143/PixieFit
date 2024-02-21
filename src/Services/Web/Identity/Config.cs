@@ -23,6 +23,7 @@ public class Config
             {
                 ClientId = "web",
                 RedirectUris = { "https://localhost:5261" },
+                AllowedGrantTypes = GrantTypes.ResourceOwnerPassword
             }
         };
 }

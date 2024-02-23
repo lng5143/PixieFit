@@ -22,6 +22,10 @@ public class Config
             new Client
             {
                 ClientId = "web",
+                ClientSecrets = 
+                {
+                    new Secret("secret".Sha256())
+                },
                 RedirectUris = { "https://localhost:5261" },
                 AllowedGrantTypes = GrantTypes.ResourceOwnerPassword
             }

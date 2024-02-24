@@ -28,7 +28,8 @@ public class Config
                     new Secret("secret".Sha256())
                 },
                 RedirectUris = { "https://localhost:5261" },
-                AllowedGrantTypes = GrantTypes.ResourceOwnerPassword
+                AllowedGrantTypes = GrantTypes.ResourceOwnerPassword,
+                AllowOfflineAccess = true // for refresh token
             }
         };
 }

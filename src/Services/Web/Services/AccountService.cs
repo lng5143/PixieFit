@@ -90,12 +90,33 @@ public class AccountService
 
     private async Task<string> IssueUserToken(User user)
     {
-        var client = new HttpClient();
+        using var client = new HttpClient();
         var tokenResponse = await client.RequestPasswordTokenAsync(
             new PasswordTokenRequest
             {
                 UserName = user.Username,
                 Password = user.PasswordHash,
+                Scope = "resize"
+            }
+        );
+
+        if (tokenResponse.IsError)
+        {
+            throw new Exception(tokenResponse.Error);
+        }
+
+        var result = JsonSerializer.Serialize(tokenResponse);
+
+        return result;
+    }
+
+    private async Task<string> GetTokenByRefreshToken(string refreshToken)
+    {
+        using var client = new HttpClient();
+        var tokenResponse = await client.RequestRefreshTokenAsync(
+            new RefreshTokenRequest
+            {
+                RefreshToken = refreshToken,
                 Scope = "resize"
             }
         );

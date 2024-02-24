@@ -8,6 +8,8 @@ using System.Security.Cryptography;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http.HttpResults;
 using PixieFit.Web.Business.Enums;
+using IdentityModel.Client;
+using System.Text.Json;
 
 namespace PixieFit.Web.Services;
 
@@ -61,7 +63,7 @@ public class AccountService
         }
     }
 
-    public async Task Login(LoginRequest request)
+    public async Task<string> Login(LoginRequest request)
     {
         if (string.IsNullOrEmpty(request.Email))
             throw new Exception(ErrorCode.EMAIL_REQUIRED.ToString());
@@ -78,10 +80,33 @@ public class AccountService
         if (Argon2.Verify(hashToVerify, user.PasswordHash))
         {
             // TODO: create JWT token
+            return await IssueUserToken(user);
         }
         else
         {
             throw new Exception("Invalid password");
         }
+    }
+
+    private async Task<string> IssueUserToken(User user)
+    {
+        var client = new HttpClient();
+        var tokenResponse = await client.RequestPasswordTokenAsync(
+            new PasswordTokenRequest
+            {
+                UserName = user.Username,
+                Password = user.PasswordHash,
+                Scope = "resize"
+            }
+        );
+
+        if (tokenResponse.IsError)
+        {
+            throw new Exception(tokenResponse.Error);
+        }
+
+        var result = JsonSerializer.Serialize(tokenResponse);
+
+        return result;
     }
 }

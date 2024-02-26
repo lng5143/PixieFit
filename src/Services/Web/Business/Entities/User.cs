@@ -1,8 +1,9 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Identity;
 
 namespace PixieFit.Web.Business.Entities;
 
-public class User : BaseEntity
+public class User : IdentityUser
 {
     [Required]
     public string Email { get; set; }
@@ -15,4 +16,7 @@ public class User : BaseEntity
 
     public string Username { get; set; }
     public long CreditAmount { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime UpdatedAt { get; set; }
+    public bool IsDeleted { get; set; }
 }

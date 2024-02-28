@@ -8,13 +8,13 @@ public class User : IdentityUser
     [Required]
     public string Email { get; set; }
 
-    [Required]
-    public string PasswordHash { get; set; }
+    // [Required]
+    // public string PasswordHash { get; set; }
 
-    [Required]
-    public string Salt { get; set; }
+    // [Required]
+    // public string Salt { get; set; }
 
-    public string Username { get; set; }
+    // public string Username { get; set; }
     public long CreditAmount { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }

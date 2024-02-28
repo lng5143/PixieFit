@@ -56,9 +56,8 @@ public class AccountService
             var user = new User
             {
                 Email = request.Email,
-                Username = request.Username,
+                UserName = request.Username,
                 PasswordHash = passwordHash,
-                Salt = salt,
                 CreditAmount = 0
             };
 
@@ -71,30 +70,30 @@ public class AccountService
         }
     }
 
-    public async Task<string> Login(LoginRequest request)
-    {
-        if (string.IsNullOrEmpty(request.Email))
-            throw new Exception(ErrorCode.EMAIL_REQUIRED.ToString());
+    // public async Task<string> Login(LoginRequest request)
+    // {
+    //     if (string.IsNullOrEmpty(request.Email))
+    //         throw new Exception(ErrorCode.EMAIL_REQUIRED.ToString());
         
-        if (string.IsNullOrEmpty(request.Password))
-            throw new Exception(ErrorCode.PASSWORD_REQUIRED.ToString());
+    //     if (string.IsNullOrEmpty(request.Password))
+    //         throw new Exception(ErrorCode.PASSWORD_REQUIRED.ToString());
 
-        var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
+    //     var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
         
-        if (user == null)
-            throw new Exception("User not found");
+    //     if (user == null)
+    //         throw new Exception("User not found");
 
-        var hashToVerify = Argon2.Hash(request.Password, user.Salt);
-        if (Argon2.Verify(hashToVerify, user.PasswordHash))
-        {
-            // TODO: create JWT token
-            return await IssueUserToken(user);
-        }
-        else
-        {
-            throw new Exception("Invalid password");
-        }
-    }
+    //     var hashToVerify = Argon2.Hash(request.Password, user.Salt);
+    //     if (Argon2.Verify(hashToVerify, user.PasswordHash))
+    //     {
+    //         // TODO: create JWT token
+    //         return await IssueUserToken(user);
+    //     }
+    //     else
+    //     {
+    //         throw new Exception("Invalid password");
+    //     }
+    // }
 
     private async Task<string> IssueUserToken(User user)
     {
@@ -102,7 +101,7 @@ public class AccountService
         var tokenResponse = await client.RequestPasswordTokenAsync(
             new PasswordTokenRequest
             {
-                UserName = user.Username,
+                UserName = user.UserName,
                 Password = user.PasswordHash,
                 Scope = "resize"
             }

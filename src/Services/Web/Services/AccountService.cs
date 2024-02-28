@@ -74,32 +74,43 @@ public class AccountService
         }
     }
 
-    // public async Task<string> Login(LoginRequest request)
-    // {
-    //     if (string.IsNullOrEmpty(request.Email))
-    //         throw new Exception(ErrorCode.EMAIL_REQUIRED.ToString());
+    public async Task<LoginResponse> Login(LoginRequest request)
+    {
+        if (string.IsNullOrEmpty(request.Email))
+            throw new Exception(ErrorCode.EMAIL_REQUIRED.ToString());
         
-    //     if (string.IsNullOrEmpty(request.Password))
-    //         throw new Exception(ErrorCode.PASSWORD_REQUIRED.ToString());
+        if (string.IsNullOrEmpty(request.Password))
+            throw new Exception(ErrorCode.PASSWORD_REQUIRED.ToString());
 
-    //     var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
+        var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
         
-    //     if (user == null)
-    //         throw new Exception("User not found");
+        if (user == null)
+            throw new Exception("User not found");
 
-    //     var hashToVerify = Argon2.Hash(request.Password, user.Salt);
-    //     if (Argon2.Verify(hashToVerify, user.PasswordHash))
-    //     {
-    //         // TODO: create JWT token
-    //         return await IssueUserToken(user);
-    //     }
-    //     else
-    //     {
-    //         throw new Exception("Invalid password");
-    //     }
-    // }
+        // var hashToVerify = Argon2.Hash(request.Password, user.Salt);
+        // if (Argon2.Verify(hashToVerify, user.PasswordHash))
+        // {
+        //     // TODO: create JWT token
+        //     return await IssueUserToken(user);
+        // }
+        // else
+        // {
+        //     throw new Exception("Invalid password");
+        // }
 
-    private async Task<string> IssueUserToken(User user)
+        var result = await _signInManager.PasswordSignInAsync(user, request.Password, false, false);
+
+        if (result.Succeeded)
+        {
+            return await IssueUserToken(user);
+        }
+        else
+        {
+            throw new Exception("Invalid password");
+        }
+    }
+
+    private async Task<LoginResponse> IssueUserToken(User user)
     {
         using var client = new HttpClient();
         var tokenResponse = await client.RequestPasswordTokenAsync(
@@ -118,7 +129,7 @@ public class AccountService
 
         var result = JsonSerializer.Serialize(tokenResponse);
 
-        return result;
+        return null;
     }
 
     private async Task<string> GetTokenByRefreshToken(string refreshToken)

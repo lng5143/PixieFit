@@ -21,10 +21,18 @@ public interface IAccountService
 public class AccountService 
 {
     private readonly PFContext _dbContext;
+    private readonly UserManager<User> _userManager;
+    private readonly SignInManager<User> _signInManager;
 
-    public AccountService(PFContext dbContext)
+    public AccountService(
+        PFContext dbContext,
+        UserManager<User> userManager,
+        SignInManager<User> signInManager
+        )
     {
         _dbContext = dbContext;
+        _userManager = userManager;
+        _signInManager = signInManager;
     }
 
     public async Task CreateAccount(SignUpRequest request)

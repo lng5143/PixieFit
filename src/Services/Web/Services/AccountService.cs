@@ -50,19 +50,23 @@ public class AccountService
                 throw new Exception(ErrorCode.USERNAME_REQUIRED.ToString());
 
             // hashing and salting password 
-            var salt = RandomNumberGenerator.GetBytes(16).ToB64String();
-            var passwordHash = Argon2.Hash(request.Password, salt);
+            // var salt = RandomNumberGenerator.GetBytes(16).ToB64String();
+            // var passwordHash = Argon2.Hash(request.Password, salt);
 
             var user = new User
             {
+                Id = Guid.NewGuid().ToString(),
                 Email = request.Email,
                 UserName = request.Username,
-                PasswordHash = passwordHash,
-                CreditAmount = 0
+                CreditAmount = 0,
+                CreatedAt = DateTime.Now,
+                UpdatedAt = DateTime.Now,
+                IsDeleted = false
             };
 
-            await _dbContext.Users.AddAsync(user);
-            // await _dbContext.SaveChangesAsync();
+            await _userManager.CreateAsync(user, request.Password);
+
+            await _dbContext.SaveChangesAsync();
         }
         catch (Exception e)
         {

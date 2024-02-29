@@ -10,19 +10,30 @@ public interface IStripeService
 public class StripeService : IStripeService
 {
     private readonly PFContext _dbContext;
-    private readonly HttpClient _httpClient;
+    
 
     public StripeService(
-        PFContext dbContext,
-        HttpClient httpClient
+        PFContext dbContext
         )
     {
         _dbContext = dbContext;
-        _httpClient = httpClient;
     }
 
-    public async Task RequestPayment(PaymentRequest request)
+    public async Task<string> RequestPayment(PaymentRequest request)
     {
-        return null;
+        var httpClient = new HttpClient();
+        httpClient.BaseAddress = new Uri("https://api.stripe.com");
+
+        var response = await httpClient.PostAsJsonAsync("/v1/payment_intents", request);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new Exception("Payment failed");
+        }
+
+        var responseString = JsonSerializer.Deserialize<CheckoutSessionResponse>(response.Content.ReadAsStringAsync());
+        return responseString.Url;
     }
+
+    
 }

@@ -10,6 +10,9 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<PFContext>(options
     => options.UseNpgsql(PFContext.ConnectionString));
 
+builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.AddScoped<IStripeService, StripeService>();
+
 builder.Services.AddIdentity<User, IdentityRole>()
     .AddEntityFrameworkStores<PFContext>();
 

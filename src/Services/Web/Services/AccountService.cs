@@ -127,9 +127,7 @@ public class AccountService
             throw new Exception(tokenResponse.Error);
         }
 
-        var result = JsonSerializer.Serialize(tokenResponse);
-
-        return null;
+        return new LoginResponse { TokenResponse = tokenResponse };
     }
 
     private async Task<string> GetTokenByRefreshToken(string refreshToken)

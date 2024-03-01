@@ -12,6 +12,7 @@ builder.Services.AddDbContext<PFContext>(options
 
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<IStripeService, StripeService>();
+builder.Services.AddScoped<IPayoneerService, PayoneerService>();
 
 builder.Services.AddIdentity<User, IdentityRole>()
     .AddEntityFrameworkStores<PFContext>();

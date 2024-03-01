@@ -10,19 +10,22 @@ public class CreditController
     private readonly UserManager<User> _userManager;
     private readonly PFContext _dbContext;
     private readonly IStripeService _stripeService;
+    private readonly IPayoneerService _payoneerService;
 
     [ApiController]
     public CreditController(
         IPaymentService paymentService,
         UserManager<User> userManager,
         PFContext dbContext,
-        IStripeService stripeService
+        IStripeService stripeService,
+        IPayoneerService payoneerService,
         )
     {
         _paymentService = paymentService;
         _userManager = userManager;
         _dbContext = dbContext;
         _stripeService = stripeService;
+        _payoneerService = payoneerService;
     }
 
     [HttpPost]
@@ -32,7 +35,7 @@ public class CreditController
         {
             Amount = request.Amount
         };
-        var response = await _stripeService.RequestPayment(paymentRequest);
+        var response = await _payoneerService.RequestPayment(paymentRequest);
 
         return response;
     }

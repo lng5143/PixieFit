@@ -1,4 +1,7 @@
 using PixieFit.Web.Business.Models;
+using System.Net.Http.Headers;
+using System.Text;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace PixieFit.Web.Services;
@@ -27,9 +30,9 @@ public class PayPalService : IPayPalService
 
     public async Task<PayPalAuthResponse> GetAccessToken()
     {
-        using var httpClient = new HttpClient();
+        using var client = new HttpClient();
         var clientId = _configuration["PayPal:ClientId"];
-        var secret = _configuration["PayPal:Secret"];
+        var clientSecret = _configuration["PayPal:Secret"];
         var baseUrl = _configuration["PayPal:BaseUrl"];
 
         // Base URL for Sandbox environment
@@ -42,7 +45,7 @@ public class PayPalService : IPayPalService
 
         // Set content type for form data
         // client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-        client.DefaultRequestHeaders.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
+        client. = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
 
         // Form data
         var formDataContent = new FormUrlEncodedContent(new[]
@@ -57,8 +60,8 @@ public class PayPalService : IPayPalService
         if (response.IsSuccessStatusCode)
         {
             var responseString = await response.Content.ReadAsStringAsync();
-            var response = JsonSerializer.Deserializer<PayPalAuthResponse>(responseString);
-            return response;
+            var responseObj = JsonSerializer.Deserialize<PayPalAuthResponse>(responseString);
+            return responseObj;
         }
         else
         {

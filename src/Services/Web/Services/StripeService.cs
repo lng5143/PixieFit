@@ -1,11 +1,12 @@
-using PixieFit.Web.Business.Model;
-using 
+using PixieFit.Web.Business;
+using PixieFit.Web.Business.Models;
+using System.Text.Json;
 
 namespace PixieFit.Web.Services;
 
 public interface IStripeService
 {
-    Task RequestPayment(PaymentRequest request);
+    Task<string> RequestPayment(PaymentRequest request);
 }
 
 public class StripeService : IStripeService
@@ -32,7 +33,7 @@ public class StripeService : IStripeService
             throw new Exception("Payment failed");
         }
 
-        var responseString = JsonSerializer.Deserialize<CheckoutSessionResponse>(response.Content.ReadAsStringAsync());
+        var responseString = JsonSerializer.Deserialize<CheckoutSessionResponse>(await response.Content.ReadAsStringAsync());
         return responseString.Url;
     }
 

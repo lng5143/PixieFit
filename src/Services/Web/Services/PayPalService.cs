@@ -43,10 +43,6 @@ public class PayPalService : IPayPalService
 
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", authorizationHeader);
 
-        // Set content type for form data
-        // client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-        client. = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
-
         // Form data
         var formDataContent = new FormUrlEncodedContent(new[]
         {

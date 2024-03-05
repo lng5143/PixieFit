@@ -28,7 +28,7 @@ public class PayPalService : IPayPalService
 
     }
 
-    public async Task<PayPalAuthResponse> GetAccessToken()
+    public async Task<string> GetAccessToken()
     {
         using var client = new HttpClient();
         var clientId = _configuration["PayPal:ClientId"];
@@ -57,11 +57,49 @@ public class PayPalService : IPayPalService
         {
             var responseString = await response.Content.ReadAsStringAsync();
             var responseObj = JsonSerializer.Deserialize<PayPalAuthResponse>(responseString);
-            return responseObj;
+            return responseObj.AccessToken;
         }
         else
         {
             throw new Exception($"Error getting access token: {response.StatusCode}");
         }
     }
+
+    public async Task HandleWebhook(HttpRequest request)
+    {
+        var json = await new StreamReader(request.Body).ReadToEndAsync();
+        var headers = request.Headers;
+    }
+
+    public async Task VerifyWebHookSignature(string json, IHeaderDictionary headerDictionary)
+    {
+        // !!IMPORTANT!!
+        // Without this direct JSON serialization, PayPal WILL ALWAYS return verification_status = "FAILURE".
+        // This is probably because the order of the fields are different and PayPal does not sort them. 
+        var paypalVerifyRequestJsonString = $@"{{
+            ""transmission_id"": ""{headerDictionary["PAYPAL-TRANSMISSION-ID"][0]}"",
+            ""transmission_time"": ""{headerDictionary["PAYPAL-TRANSMISSION-TIME"][0]}"",
+            ""cert_url"": ""{headerDictionary["PAYPAL-CERT-URL"][0]}"",
+            ""auth_algo"": ""{headerDictionary["PAYPAL-AUTH-ALGO"][0]}"",
+            ""transmission_sig"": ""{headerDictionary["PAYPAL-TRANSMISSION-SIG"][0]}"",
+            ""webhook_id"": ""<get from paypal developer dashboard>"",
+            ""webhook_event"": {json}
+            }}";
+
+        using var client = new HttpClient();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", await GetAccessToken());
+
+        var content = new StringContent(paypalVerifyRequestJsonString, Encoding.UTF8, "application/json");
+
+        var resultResponse = await client.PostAsync("https://api-m.sandbox.paypal.com/v1/notifications/verify-webhook-signature", content);
+
+        var responseBody = await resultResponse.Content.ReadAsStringAsync();
+
+        var verifyWebhookResponse = JsonConvert.DeserializeObject<VerifyWebhookResponse>(responseBody);
+
+        if (verifyWebhookResponse.verification_status != "SUCCESS")
+        {
+            throw new Exception("failed to verify webhook response");
+        }
+}
 }

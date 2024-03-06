@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using PixieFit.Web.Identity;
 using PixieFit.Web.Business.Entities;
 using Microsoft.AspNetCore.Identity;
+using PixieFit.Web.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,9 +11,8 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<PFContext>(options
     => options.UseNpgsql(PFContext.ConnectionString));
 
-builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<IStripeService, StripeService>();
-builder.Services.AddScoped<IPayoneerService, PayoneerService>();
+builder.Services.AddScoped<IPayPalService, PayPalService>();
 
 builder.Services.AddIdentity<User, IdentityRole>()
     .AddEntityFrameworkStores<PFContext>();

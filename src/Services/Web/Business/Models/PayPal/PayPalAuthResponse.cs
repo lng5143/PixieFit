@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace PixieFit.Web.Business.Models;
 
 public class PayPalAuthResponse

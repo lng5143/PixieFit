@@ -97,7 +97,7 @@ public class PayPalService : IPayPalService
 
         var verifyWebhookResponse = JsonSerializer.Deserialize<VerifyWebhookResponse>(responseBody);
 
-        if (verifyWebhookResponse.VerificationStatus != "SUCCESS")
+        if (verifyWebhookResponse?.VerificationStatus != "SUCCESS")
         {
             throw new Exception("failed to verify webhook response");
         }

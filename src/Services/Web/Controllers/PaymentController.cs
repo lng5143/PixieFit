@@ -1,4 +1,5 @@
 using PixieFit.Web.Services;
+using Microsoft.AspNetCore.Mvc;
 
 namespace PixieFit.Web.Controllers;
 
@@ -19,14 +20,14 @@ public class PaymentController
     // }
 
     [HttpPost]
-    public async Task<IActionResult> StripeIPN(StripeIPNWebHook request)
+    public async Task<IActionResult> StripeIPN()
     {
-
+        return null;
     }
 
     [HttpPost]
-    public async Task<IActionResult> StripeRedirect(StripeRedirect request)
+    public async Task<IActionResult> StripeRedirect()
     {
-
+        return null;
     }
 }

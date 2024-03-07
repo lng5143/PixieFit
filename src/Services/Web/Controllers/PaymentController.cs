@@ -4,13 +4,21 @@ using Microsoft.AspNetCore.Mvc;
 namespace PixieFit.Web.Controllers;
 
 [ApiController]
-public class PaymentController
+[Route("api/[controller]")]
+public class PaymentController : ControllerBase
 {
     private readonly IStripeService _stripeService;
+    private readonly IPayPalService _payPalService;
+    private readonly ILogger<PaymentController> _logger;
 
-    public PaymentController(IStripeService stripeService)
+    public PaymentController(
+        IStripeService stripeService,
+        IPayPalService payPalService,
+        ILogger<PaymentController> logger)
     {
         _stripeService = stripeService;
+        _payPalService = payPalService;
+        _logger = logger;
     }
 
     // public async Task<IActionResult> CreatePayment(PaymentRequest request)
@@ -28,6 +36,15 @@ public class PaymentController
     [HttpPost]
     public async Task<IActionResult> StripeRedirect()
     {
+        return null;
+    }
+
+    [HttpPost]
+    [Route("paypal-webhook")]
+    public async Task<IActionResult> PayPalWebhook()
+    {
+        await _payPalService.HandleWebhook(HttpContext.Request);
+
         return null;
     }
 }

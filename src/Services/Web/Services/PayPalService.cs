@@ -9,6 +9,7 @@ namespace PixieFit.Web.Services;
 public interface IPayPalService
 {
     Task<PayPalOrderResponse> CreateOrderAsync(PayPalOrderRequest request);
+    Task HandleWebhook(HttpRequest request);
 }
 
 public class PayPalService : IPayPalService
@@ -69,6 +70,7 @@ public class PayPalService : IPayPalService
     {
         var json = await new StreamReader(request.Body).ReadToEndAsync();
         var headers = request.Headers;
+
     }
 
     public async Task VerifyWebHookSignature(string json, IHeaderDictionary headerDictionary)

@@ -1,4 +1,5 @@
 using PixieFit.Web.Business.Models;
+using PixieFit.Web.Business.Managers;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
@@ -16,11 +17,16 @@ public class PayPalService : IPayPalService
 {
     private readonly HttpClient _httpClient;
     private readonly IConfiguration _configuration;
+    private readonly ICreditManager _creditManager;  
 
-    public PayPalService(HttpClient httpClient, IConfiguration configuration)
+    public PayPalService(
+        HttpClient httpClient, 
+        IConfiguration configuration,
+        ICreditManager creditManager)
     {
         _httpClient = httpClient;
         _configuration = configuration;
+        _creditManager = creditManager;
     }
 
     public async Task<PayPalOrderResponse> CreateOrderAsync(PayPalOrderRequest request)
@@ -69,7 +75,22 @@ public class PayPalService : IPayPalService
     public async Task HandleWebhook(HttpRequest request)
     {
         var json = await new StreamReader(request.Body).ReadToEndAsync();
-        var headers = request.Headers;
+        // var headers = request.Headers;
+
+        var verifyResult = await VerifyWebhookSignatureV2(request);
+        if (verifyResult.Equals("SUCCESS"))
+        {
+            var webhookEvent = JsonSerializer.Deserialize<WebhookEvent>(json);
+            if (webhookEvent.EventType == "CHECKOUT.ORDER.APPROVED")
+            {
+                // Do something with the order
+                await _creditManager.HandleSuccessfulPayment();
+            }
+        }
+        else
+        {
+            throw new Exception("failed to verify webhook response");
+        }
 
     }
 

@@ -103,5 +103,42 @@ public class PayPalService : IPayPalService
         {
             throw new Exception("failed to verify webhook response");
         }
-}
+    }
+
+    public async Task<string> VerifyWebhookSignatureV2(HttpRequest request)
+    {
+
+        var webhookEvent = request.Body;
+        var headers = request.Headers;
+
+        var verifyRequest = new PayPalVerifyWebhookRequest {
+            AuthAlgo = headers["PAYPAL-AUTH-ALGO"],
+            CertUrl = headers["PAYPAL-CERT-URL"],
+            TransmissionId = headers["PAYPAL-TRANSMISSION-ID"],
+            TransmissionSig = headers["PAYPAL-TRANSMISSION-SIG"],
+            TransmissionTime = DateTime.Parse(headers["PAYPAL-TRANSMISSION-TIME"]),
+            WebhookId = "<get from paypal developer dashboard>",
+            WebhookEvent = webhookEvent
+        };
+
+        using var client = new HttpClient();
+
+        var baseUrl = _configuration["PayPal:BaseUrl"];
+
+        client.BaseAddress = new Uri(baseUrl);
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", await GetAccessToken());
+
+        var content = new StringContent(JsonSerializer.Serialize(verifyRequest), Encoding.UTF8, "application/json");
+        var resultResponse = await client.PostAsync("https://api-m.sandbox.paypal.com/v1/notifications/verify-webhook-signature", content);
+
+        if (resultResponse is null)
+        {
+            throw new Exception("failed to verify webhook response");
+        }
+
+        var responseBody = await resultResponse.Content.ReadAsStringAsync();
+        var verifyWebhookResponse = JsonSerializer.Deserialize<VerifyWebhookResponse>(responseBody);
+
+        return verifyWebhookResponse.VerificationStatus;
+    }
 }

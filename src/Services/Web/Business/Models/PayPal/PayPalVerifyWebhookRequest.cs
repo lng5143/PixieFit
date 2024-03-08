@@ -23,7 +23,7 @@ public class PayPalVerifyWebhookRequest
     public string WebhookId { get; set; }
 
     [JsonPropertyName("webhook_event")]
-    public WebhookEvent WebhookEvent { get; set; }
+    public object WebhookEvent { get; set; }
 }
 
 public class WebhookEvent

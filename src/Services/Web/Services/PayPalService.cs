@@ -72,7 +72,7 @@ public class PayPalService : IPayPalService
         }
     }
 
-    public async Task HandleWebhook(HttpRequest request)
+    public async Task<HttpResult> HandleWebhook(HttpRequest request)
     {
         var json = await new StreamReader(request.Body).ReadToEndAsync();
         // var headers = request.Headers;
@@ -84,7 +84,7 @@ public class PayPalService : IPayPalService
             if (webhookEvent.EventType == "CHECKOUT.ORDER.APPROVED")
             {
                 // Do something with the order
-                await _creditManager.HandleSuccessfulPayment();
+                return await _creditManager.HandleSuccessfulPayment();
             }
         }
         else

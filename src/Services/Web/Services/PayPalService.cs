@@ -4,6 +4,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace PixieFit.Web.Services;
 
@@ -72,7 +73,7 @@ public class PayPalService : IPayPalService
         }
     }
 
-    public async Task<HttpResult> HandleWebhook(HttpRequest request)
+    public async Task HandleWebhook(HttpRequest request)
     {
         var json = await new StreamReader(request.Body).ReadToEndAsync();
         // var headers = request.Headers;
@@ -81,10 +82,9 @@ public class PayPalService : IPayPalService
         if (verifyResult.Equals("SUCCESS"))
         {
             var webhookEvent = JsonSerializer.Deserialize<WebhookEvent>(json);
-            if (webhookEvent.EventType == "CHECKOUT.ORDER.APPROVED")
+            if (webhookEvent?.EventType == "CHECKOUT.ORDER.APPROVED")
             {
-                // Do something with the order
-                return await _creditManager.HandleSuccessfulPayment();
+                await _creditManager.HandleSuccessfulPayment();
             }
         }
         else
@@ -160,6 +160,6 @@ public class PayPalService : IPayPalService
         var responseBody = await resultResponse.Content.ReadAsStringAsync();
         var verifyWebhookResponse = JsonSerializer.Deserialize<VerifyWebhookResponse>(responseBody);
 
-        return verifyWebhookResponse.VerificationStatus;
+        return verifyWebhookResponse?.VerificationStatus;
     }
 }

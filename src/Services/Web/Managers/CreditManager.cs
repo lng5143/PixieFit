@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PixieFit.Web.Business;
 using PixieFit.Web.Business.Entities;
@@ -20,7 +21,7 @@ public class CreditManager : ICreditManager
         _dbContext = dbContext;
     }
 
-    public async Task<HttpResult> HandleSuccessfulPayment()
+    public async Task HandleSuccessfulPayment()
     {
         try 
         {
@@ -44,8 +45,6 @@ public class CreditManager : ICreditManager
             user.CreditAmount += userTransaction.CreditAmount;
 
             transaction.Commit();
-
-            return new Ok
         }
         catch(Exception ex)
         {

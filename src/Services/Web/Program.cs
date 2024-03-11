@@ -2,6 +2,7 @@ using PixieFit.Web.Business;
 using Microsoft.EntityFrameworkCore;
 using PixieFit.Web.Identity;
 using PixieFit.Web.Business.Entities;
+using PixieFit.Web.Business.Managers;
 using Microsoft.AspNetCore.Identity;
 using PixieFit.Web.Services;
 
@@ -13,6 +14,7 @@ builder.Services.AddDbContext<PFContext>(options
 
 builder.Services.AddScoped<IStripeService, StripeService>();
 builder.Services.AddScoped<IPayPalService, PayPalService>();
+builder.Services.AddScoped<ICreditManager, CreditManager>();   
 
 builder.Services.AddIdentity<User, IdentityRole>()
     .AddEntityFrameworkStores<PFContext>();

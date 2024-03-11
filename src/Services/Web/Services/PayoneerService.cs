@@ -1,3 +1,6 @@
+using PixieFit.Web.Business;
+using PixieFit.Web.Business.Models;
+
 namespace PixieFit.Web.Services;
 
 public interface IPayoneerService

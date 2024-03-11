@@ -1,4 +1,5 @@
 using PixieFit.Web.Business.Models;
+using PixieFit.Web.Business.Managers;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
@@ -9,17 +10,23 @@ namespace PixieFit.Web.Services;
 public interface IPayPalService
 {
     Task<PayPalOrderResponse> CreateOrderAsync(PayPalOrderRequest request);
+    Task HandleWebhook(HttpRequest request);
 }
 
 public class PayPalService : IPayPalService
 {
     private readonly HttpClient _httpClient;
     private readonly IConfiguration _configuration;
+    private readonly ICreditManager _creditManager;  
 
-    public PayPalService(HttpClient httpClient, IConfiguration configuration)
+    public PayPalService(
+        HttpClient httpClient, 
+        IConfiguration configuration,
+        ICreditManager creditManager)
     {
         _httpClient = httpClient;
         _configuration = configuration;
+        _creditManager = creditManager;
     }
 
     public async Task<PayPalOrderResponse> CreateOrderAsync(PayPalOrderRequest request)
@@ -65,10 +72,26 @@ public class PayPalService : IPayPalService
         }
     }
 
-    public async Task HandleWebhook(HttpRequest request)
+    public async Task<HttpResult> HandleWebhook(HttpRequest request)
     {
         var json = await new StreamReader(request.Body).ReadToEndAsync();
-        var headers = request.Headers;
+        // var headers = request.Headers;
+
+        var verifyResult = await VerifyWebhookSignatureV2(request);
+        if (verifyResult.Equals("SUCCESS"))
+        {
+            var webhookEvent = JsonSerializer.Deserialize<WebhookEvent>(json);
+            if (webhookEvent.EventType == "CHECKOUT.ORDER.APPROVED")
+            {
+                // Do something with the order
+                return await _creditManager.HandleSuccessfulPayment();
+            }
+        }
+        else
+        {
+            throw new Exception("failed to verify webhook response");
+        }
+
     }
 
     public async Task VerifyWebHookSignature(string json, IHeaderDictionary headerDictionary)
@@ -95,11 +118,48 @@ public class PayPalService : IPayPalService
 
         var responseBody = await resultResponse.Content.ReadAsStringAsync();
 
-        var verifyWebhookResponse = JsonConvert.DeserializeObject<VerifyWebhookResponse>(responseBody);
+        var verifyWebhookResponse = JsonSerializer.Deserialize<VerifyWebhookResponse>(responseBody);
 
-        if (verifyWebhookResponse.verification_status != "SUCCESS")
+        if (verifyWebhookResponse?.VerificationStatus != "SUCCESS")
         {
             throw new Exception("failed to verify webhook response");
         }
-}
+    }
+
+    public async Task<string> VerifyWebhookSignatureV2(HttpRequest request)
+    {
+
+        var webhookEvent = request.Body;
+        var headers = request.Headers;
+
+        var verifyRequest = new PayPalVerifyWebhookRequest {
+            AuthAlgo = headers["PAYPAL-AUTH-ALGO"],
+            CertUrl = headers["PAYPAL-CERT-URL"],
+            TransmissionId = headers["PAYPAL-TRANSMISSION-ID"],
+            TransmissionSig = headers["PAYPAL-TRANSMISSION-SIG"],
+            TransmissionTime = DateTime.Parse(headers["PAYPAL-TRANSMISSION-TIME"]),
+            WebhookId = "<get from paypal developer dashboard>",
+            WebhookEvent = webhookEvent
+        };
+
+        using var client = new HttpClient();
+
+        var baseUrl = _configuration["PayPal:BaseUrl"];
+
+        client.BaseAddress = new Uri(baseUrl);
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", await GetAccessToken());
+
+        var content = new StringContent(JsonSerializer.Serialize(verifyRequest), Encoding.UTF8, "application/json");
+        var resultResponse = await client.PostAsync("https://api-m.sandbox.paypal.com/v1/notifications/verify-webhook-signature", content);
+
+        if (resultResponse is null)
+        {
+            throw new Exception("failed to verify webhook response");
+        }
+
+        var responseBody = await resultResponse.Content.ReadAsStringAsync();
+        var verifyWebhookResponse = JsonSerializer.Deserialize<VerifyWebhookResponse>(responseBody);
+
+        return verifyWebhookResponse.VerificationStatus;
+    }
 }

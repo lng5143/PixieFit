@@ -47,4 +47,12 @@ public class PaymentController : ControllerBase
 
         return Ok();
     }
+
+    [HttpPost]
+    [Route("paypal-webhook")]
+    public async Task<IActionResult> PayPalWebhook(PayPalWebhook request)
+    {
+
+        return result;
+    }
 }

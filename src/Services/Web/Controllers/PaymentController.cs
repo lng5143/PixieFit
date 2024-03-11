@@ -3,6 +3,7 @@ using PixieFit.Web.Services;
 namespace PixieFit.Web.Controllers;
 
 [ApiController]
+[Route("api/[controller]")]
 public class PaymentController
 {
     private readonly IStripeService _stripeService;
@@ -28,5 +29,13 @@ public class PaymentController
     public async Task<IActionResult> StripeRedirect(StripeRedirect request)
     {
 
+    }
+
+    [HttpPost]
+    [Route("paypal-webhook")]
+    public async Task<IActionResult> PayPalWebhook(PayPalWebhook request)
+    {
+        _logger.LogInformation("PayPal Webhook received");
+        return Ok();
     }
 }

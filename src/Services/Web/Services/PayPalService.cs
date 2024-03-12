@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Serilog;
 
 namespace PixieFit.Web.Services;
 
@@ -64,6 +65,9 @@ public class PayPalService : IPayPalService
         if (response.IsSuccessStatusCode)
         {
             var responseString = await response.Content.ReadAsStringAsync();
+
+            Log.Information($"PayPal access token response: {responseString}");
+
             var responseObj = JsonSerializer.Deserialize<PayPalAuthResponse>(responseString);
             return responseObj.AccessToken;
         }
@@ -117,6 +121,8 @@ public class PayPalService : IPayPalService
         var resultResponse = await client.PostAsync("https://api-m.sandbox.paypal.com/v1/notifications/verify-webhook-signature", content);
 
         var responseBody = await resultResponse.Content.ReadAsStringAsync();
+
+        Log.Information($"PayPal verify webhook response: {responseBody}");
 
         var verifyWebhookResponse = JsonSerializer.Deserialize<VerifyWebhookResponse>(responseBody);
 

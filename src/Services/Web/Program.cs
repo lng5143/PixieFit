@@ -14,7 +14,8 @@ builder.Services.AddDbContext<PFContext>(options
 
 builder.Services.AddScoped<IStripeService, StripeService>();
 builder.Services.AddScoped<IPayPalService, PayPalService>();
-builder.Services.AddScoped<ICreditManager, CreditManager>();   
+builder.Services.AddScoped<ICreditManager, CreditManager>();
+builder.Services.AddHttpContextAccessor();  
 
 builder.Services.AddIdentity<User, IdentityRole>()
     .AddEntityFrameworkStores<PFContext>();

@@ -1,11 +1,15 @@
+using PixieFit.Web.Business;
 using PixieFit.Web.Business.Models;
 using PixieFit.Web.Business.Managers;
+using PixieFit.Web.Business.Entities;
+using PixieFit.Web.Business.Enums;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Serilog;
+using PixieFit.Web.Extensions;
 
 namespace PixieFit.Web.Services;
 
@@ -19,22 +23,41 @@ public class PayPalService : IPayPalService
 {
     private readonly HttpClient _httpClient;
     private readonly IConfiguration _configuration;
-    private readonly ICreditManager _creditManager;  
+    private readonly ICreditManager _creditManager;
+    private readonly PFContext _dbContext;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
     public PayPalService(
         HttpClient httpClient, 
         IConfiguration configuration,
-        ICreditManager creditManager)
+        ICreditManager creditManager,
+        PFContext dbContext,
+        IHttpContextAccessor httpContextAccessor)
     {
         _httpClient = httpClient;
         _configuration = configuration;
         _creditManager = creditManager;
+        _dbContext = dbContext;
+        _httpContextAccessor = httpContextAccessor;
     }
 
     public async Task<PayPalOrderResponse> CreateOrderAsync(PayPalOrderRequest request)
     {
-        return null;
+        var order = new Order
+        {
+            UserId = _httpContextAccessor.GetUserId(),
+            TotalAmount = request.Amount,
+            PaymentMethod = PaymentMethod.PAYPAL,
+            PaymentStatus = PaymentStatus.PENDING,
+            CreditPackageId = request.CreditPackageId
+        };
 
+        _dbContext.Orders.Add(order);
+        await _dbContext.SaveChangesAsync();
+
+        // TODO: call PayPalService to create order 
+
+        return null;
     }
 
     public async Task<string> GetAccessToken()

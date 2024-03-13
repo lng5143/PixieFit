@@ -5,6 +5,9 @@ using Microsoft.AspNetCore.Identity;
 using PixieFit.Web.Business.Entities;
 using PixieFit.Web.Business.Consts;
 using PixieFit.Web.Business.Enums;
+using Microsoft.AspNetCore.Http.HttpResults;
+using PixieFit.Web.Extensions;
+using PixieFit.Web.Business;
 
 namespace PixieFit.Web.Controllers;
 
@@ -15,30 +18,52 @@ public class ResizeController
     private readonly ICreditManager _creditManager;
     private readonly UserManager<User> _userManager;
     private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly PFContext _dbContext;
 
     public ResizeController(
         ICreditManager creditManager,
         UserManager<User> userManager,
-        IHttpContextAccessor httpContextAccessor)
+        IHttpContextAccessor httpContextAccessor,
+        PFContext dbContext)
     {
         _creditManager = creditManager;
         _userManager = userManager;
         _httpContextAccessor = httpContextAccessor;
+        _dbContext = dbContext;
     }
 
     [HttpPost]
     public async Task<IActionResult> ResizeImage(ResizeImageRequest request)
     {
-        var user = await _userManager.GetUserAsync(_httpContextAccessor.HttpContext.User);
+        if (request is null)
+            throw new ArgumentNullException(nameof(request));
+
+        var user = await _userManager.GetUserAsync(_httpContextAccessor.HttpContext?.User);
+
+        if (user is null)
+            throw new Exception("User not found");
 
         if (user.CreditAmount < PixieFitConsts.ResizeCreditCost)
+            throw new Exception("Insufficient credit.");
+
+        var resize = new Resize
         {
-            return BadRequest("Not enough credits");
-        }
+            UserId = _httpContextAccessor.GetUserId(),
+            FileName = request.FileName,
+            ResizeHeight = request.ResizeHeight,
+            ResizeWidth = request.ResizeWidth,
+            ImageSize = request.ImageSize,
+            OriginalWidth = request.OriginalWidth,
+            OriginalHeight = request.OriginalHeight,
+            Status = ResizeStatus.Pending
+        };
 
         user.CreditAmount -= PixieFitConsts.ResizeCreditCost;
 
+        await _dbContext.Resizes.AddAsync(resize);
         await _userManager.UpdateAsync(user);
+
+        await _dbContext.SaveChangesAsync();
 
         // TODO: Resize image
         var channel = GrpcChannel.ForAddress("http://localhost:5274");

@@ -46,7 +46,7 @@ public class ResizeController
         if (user.CreditAmount < PixieFitConsts.ResizeCreditCost)
             throw new Exception("Insufficient credit.");
 
-        var resize = new Resize
+        var resize = new ResizeAttempt
         {
             UserId = _httpContextAccessor.GetUserId(),
             FileName = request.FileName,

@@ -1,7 +1,7 @@
 using PixieFit.Web.Business.Enums;
 
 namespace PixieFit.Web.Business.Entities;
-public class Resize : BaseEntity
+public class ResizeAttempt : BaseEntity
 {
     public Guid UserId { get; set; }
     public string? FileName { get; set; }

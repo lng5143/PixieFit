@@ -8,7 +8,7 @@ public class PFContext : DbContext
 {
     public DbSet<User> Users { get; set; }
     public DbSet<CreditPackage> CreditPackages { get; set; }
-    public DbSet<Resize> Resizes { get; set; }
+    public DbSet<ResizeAttempt> Resizes { get; set; }
     public DbSet<UserTransaction> UserTransactions { get; set; }
     public DbSet<Order> Orders { get; set; }
     public DbSet<Webhook> Webhooks { get; set; }

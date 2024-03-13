@@ -2,7 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using PixieFit.Web.Business.Managers;
 using PixieFit.Web.Business.Models;
 using Microsoft.AspNetCore.Identity;
-using PixieFit.Web.Business.Entities;  
+using PixieFit.Web.Business.Entities;
+using PixieFit.Web.Business.Consts;  
 
 namespace PixieFit.Web.Controllers;
 
@@ -27,7 +28,20 @@ public class ResizeController
     [HttpPost]
     public async Task<IActionResult> ResizeImage(ResizeImageRequest request)
     {
+        var user = await _userManager.GetUserAsync(_httpContextAccessor.HttpContext.User);
+
+        if (user.CreditAmount < PixieFitConsts.ResizeCreditCost)
+        {
+            return BadRequest("Not enough credits");
+        }
+
+        user.CreditAmount -= PixieFitConsts.ResizeCreditCost;
+
+        await _userManager.UpdateAsync(user);
+
+        // TODO: Resize image
         
+
         return null;
     }
 }

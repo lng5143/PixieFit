@@ -3,7 +3,8 @@ using PixieFit.Web.Business.Managers;
 using PixieFit.Web.Business.Models;
 using Microsoft.AspNetCore.Identity;
 using PixieFit.Web.Business.Entities;
-using PixieFit.Web.Business.Consts;  
+using PixieFit.Web.Business.Consts;
+using PixieFit.Web.Business.Enums;
 
 namespace PixieFit.Web.Controllers;
 
@@ -40,7 +41,18 @@ public class ResizeController
         await _userManager.UpdateAsync(user);
 
         // TODO: Resize image
-        
+        var channel = GrpcChannel.ForAddress("http://localhost:5274");
+        var client = new Resizer.ResizerClient(channel);
+
+        var response = client.Resize(new ResizeRequest 
+        {
+
+        });
+
+        if (response.ResultCode != ResizeResult.Success)
+        {
+
+        }
 
         return null;
     }

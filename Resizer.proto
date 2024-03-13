@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+service Resize {
+  rpc SayHello (ResizeRequest) returns (ResizeResponse);
+}
+
+message ResizeRequest {
+  bytes image = 1;
+  decimal width = 2;
+  decimal height = 3;
+
+}
+
+message ResizeResponse {
+  string message = 1;
+  int resultCode = 2;
+}

@@ -13,5 +13,5 @@ message ResizeRequest {
 
 message ResizeResponse {
   string message = 1;
-  int resultCode = 2;
+  int result = 2;
 }

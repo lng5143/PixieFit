@@ -25,11 +25,11 @@ public class CreditManager : ICreditManager
     {
         try 
         {
-            var userTransaction = new UserTransaction
-            {
-                TransactionType = UserTransactionType.Deposit,
-                CreditAmount = 100
-            };
+            // var userTransaction = new UserTransaction
+            // {
+            //     TransactionType = UserTransactionType.Deposit,
+            //     CreditAmount = 100
+            // };
 
             var userId = "";
             var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
@@ -41,8 +41,8 @@ public class CreditManager : ICreditManager
 
             using var transaction = _dbContext.Database.BeginTransaction();
 
-            _dbContext.UserTransactions.Add(userTransaction);
-            user.CreditAmount += userTransaction.CreditAmount;
+            // _dbContext.UserTransactions.Add(userTransaction);
+            // user.CreditAmount += userTransaction.CreditAmount;
 
             transaction.Commit();
         }

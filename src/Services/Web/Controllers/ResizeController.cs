@@ -66,18 +66,18 @@ public class ResizeController
         await _dbContext.SaveChangesAsync();
 
         // TODO: Resize image
-        var channel = GrpcChannel.ForAddress("http://localhost:5274");
-        var client = new Resizer.ResizerClient(channel);
+        // var channel = GrpcChannel.ForAddress("http://localhost:5274");
+        // var client = new Resizer.ResizerClient(channel);
 
-        var response = client.Resize(new ResizeRequest 
-        {
+        // var response = client.Resize(new ResizeRequest 
+        // {
 
-        });
+        // });
 
-        if (response.ResultCode != ResizeResult.Success)
-        {
+        // if (response.ResultCode != ResizeResult.Success)
+        // {
 
-        }
+        // }
 
         return null;
     }

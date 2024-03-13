@@ -4,6 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using PixieFit.Web.Business;
 using PixieFit.Web.Business.Entities;
 using PixieFit.Web.Business.Enums;
+using Microsoft.AspNetCore.Identity;
+using PixieFit.Web.Extensions;
 
 namespace PixieFit.Web.Business.Managers;
 
@@ -15,23 +17,24 @@ public interface ICreditManager
 public class CreditManager : ICreditManager
 {
     private readonly PFContext _dbContext;
+    private readonly UserManager<User> _userManager;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public CreditManager(PFContext dbContext)
+    public CreditManager(
+        PFContext dbContext,
+        UserManager<User> userManager,
+        IHttpContextAccessor httpContextAccessor)
     {
         _dbContext = dbContext;
+        _userManager = userManager;
+        _httpContextAccessor = httpContextAccessor;
     }
 
     public async Task HandleSuccessfulPayment()
     {
         try 
         {
-            // var userTransaction = new UserTransaction
-            // {
-            //     TransactionType = UserTransactionType.Deposit,
-            //     CreditAmount = 100
-            // };
-
-            var userId = "";
+            var userId = _httpContextAccessor.GetUserId();
             var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
 
             if (user is null)
@@ -41,7 +44,6 @@ public class CreditManager : ICreditManager
 
             using var transaction = _dbContext.Database.BeginTransaction();
 
-            // _dbContext.UserTransactions.Add(userTransaction);
             // user.CreditAmount += userTransaction.CreditAmount;
 
             transaction.Commit();

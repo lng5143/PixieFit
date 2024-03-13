@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Identity;
 
 namespace PixieFit.Web.Business.Entities;
 
-public class User : IdentityUser
+public class User : IdentityUser<Guid>
 {
     [Required]
     public string Email { get; set; }

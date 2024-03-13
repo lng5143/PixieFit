@@ -1,7 +1,7 @@
 syntax = "proto3";
 
 service Resize {
-  rpc SayHello (ResizeRequest) returns (ResizeResponse);
+  rpc Resize (ResizeRequest) returns (ResizeResponse);
 }
 
 message ResizeRequest {
@@ -13,4 +13,5 @@ message ResizeRequest {
 message ResizeResponse {
   string message = 1;
   int32 result = 2;
+  bytes resizedImage = 3;
 }

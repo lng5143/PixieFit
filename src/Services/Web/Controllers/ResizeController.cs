@@ -8,6 +8,8 @@ using PixieFit.Web.Business.Enums;
 using Microsoft.AspNetCore.Http.HttpResults;
 using PixieFit.Web.Extensions;
 using PixieFit.Web.Business;
+using Grpc.Net.Client;
+using Google.Protobuf;
 
 namespace PixieFit.Web.Controllers;
 
@@ -33,7 +35,7 @@ public class ResizeController
     }
 
     [HttpPost]
-    public async Task<IActionResult> ResizeImage(ResizeImageRequest request)
+    public async Task<ResizeImageResponse> ResizeImage(ResizeImageRequest request)
     {
         if (request is null)
             throw new ArgumentNullException(nameof(request));
@@ -66,19 +68,37 @@ public class ResizeController
         await _dbContext.SaveChangesAsync();
 
         // TODO: Resize image
-        // var channel = GrpcChannel.ForAddress("http://localhost:5274");
-        // var client = new Resizer.ResizerClient(channel);
+        var channel = GrpcChannel.ForAddress("http://localhost:5274");
+        var client = new Resize.ResizeClient(channel);
 
-        // var response = client.Resize(new ResizeRequest 
-        // {
+        var response = await client.ResizeAsync(new ResizeRequest 
+        {
+                Image = ByteString.CopyFrom(request.Image),
+                Width = request.ResizeWidth,
+                Height = request.ResizeHeight
+        });
 
-        // });
+        if (response.Result == (int)ResizeResult.Success)
+        {
+            resize.Status = ResizeStatus.Completed;
+            await _dbContext.SaveChangesAsync();
 
-        // if (response.ResultCode != ResizeResult.Success)
-        // {
+            return new ResizeImageResponse
+            {
+                Image = response.ResizedImage.ToByteArray(),
+                Message = "Image resized successfully."
+            };
+        }
+        else
+        {
+            resize.Status = ResizeStatus.Failed;
+            user.CreditAmount += PixieFitConsts.ResizeCreditCost;
+            await _dbContext.SaveChangesAsync();
 
-        // }
-
-        return null;
+            return new ResizeImageResponse
+            {
+                Message = "Image resize failed."
+            };
+        }
     }
 }

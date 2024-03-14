@@ -9,5 +9,5 @@ public class Order : BaseEntity
     public PaymentMethod PaymentMethod { get; set; }
     public PaymentStatus PaymentStatus { get; set; }
     public Guid CreditPackageId { get; set; }
-
+    public string PaymentPartnerOrderId { get; set; }
 }

@@ -35,7 +35,7 @@ public class CreditManager : ICreditManager
         try 
         {
             var userId = _httpContextAccessor.GetUserId();
-            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
+            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId.ToString());
 
             if (user is null)
             {

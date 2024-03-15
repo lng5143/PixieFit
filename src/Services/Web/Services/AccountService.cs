@@ -55,7 +55,7 @@ public class AccountService
 
             var user = new User
             {
-                Id = Guid.NewGuid(),
+                Id = Guid.NewGuid().ToString(),
                 Email = request.Email,
                 UserName = request.Username,
                 CreditAmount = 0,

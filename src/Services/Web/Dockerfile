@@ -13,4 +13,4 @@ RUN dotnet publish -c Release -o /app
 FROM mcr.microsoft.com/dotnet/aspnet:${NET_IMAGE}
 WORKDIR /app 
 COPY --from=build /app ./
-#ENTRYPOINT ["dotnet", "Loop.SmartPOS.Services.Catalog.API.dll"]
+ENTRYPOINT ["dotnet", "Web.dll"]

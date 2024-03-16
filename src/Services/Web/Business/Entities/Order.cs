@@ -4,7 +4,7 @@ namespace PixieFit.Web.Business.Entities;
 
 public class Order : BaseEntity
 {
-    public Guid UserId { get; set; }
+    public string UserId { get; set; }
     public decimal TotalAmount { get; set; }
     public PaymentMethod PaymentMethod { get; set; }
     public PaymentStatus PaymentStatus { get; set; }

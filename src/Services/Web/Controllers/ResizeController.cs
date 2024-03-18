@@ -50,7 +50,7 @@ public class ResizeController
 
         var resize = new ResizeAttempt
         {
-            UserId = _httpContextAccessor.GetUserId(),
+            UserId = _httpContextAccessor.GetUserId().ToString(),
             FileName = request.FileName,
             ResizeHeight = request.ResizeHeight,
             ResizeWidth = request.ResizeWidth,

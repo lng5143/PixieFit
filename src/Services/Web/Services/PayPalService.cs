@@ -45,7 +45,7 @@ public class PayPalService : IPayPalService
     {
         var order = new Order
         {
-            UserId = _httpContextAccessor.GetUserId(),
+            UserId = _httpContextAccessor.GetUserId().ToString(),
             TotalAmount = request.Amount,
             PaymentMethod = PaymentMethod.PAYPAL,
             PaymentStatus = PaymentStatus.PENDING,

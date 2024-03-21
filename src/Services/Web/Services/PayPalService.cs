@@ -111,7 +111,8 @@ public class PayPalService : IPayPalService
             var webhookEvent = JsonSerializer.Deserialize<WebhookEvent>(json);
             if (webhookEvent?.EventType == "CHECKOUT.ORDER.APPROVED")
             {
-                await _creditManager.HandleSuccessfulPayment();
+                
+                await _creditManager.HandleSuccessfulPayment(webhookEvent);
             }
         }
         else

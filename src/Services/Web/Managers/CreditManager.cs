@@ -1,3 +1,4 @@
+using IdentityServer4.Events;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -5,13 +6,14 @@ using PixieFit.Web.Business;
 using PixieFit.Web.Business.Entities;
 using PixieFit.Web.Business.Enums;
 using Microsoft.AspNetCore.Identity;
+using PixieFit.Web.Business.Models;
 using PixieFit.Web.Extensions;
 
 namespace PixieFit.Web.Business.Managers;
 
 public interface ICreditManager
 {
-    Task HandleSuccessfulPayment();
+    Task HandleSuccessfulPayment(WebhookEvent event);
 }
 
 public class CreditManager : ICreditManager
@@ -30,13 +32,15 @@ public class CreditManager : ICreditManager
         _httpContextAccessor = httpContextAccessor;
     }
 
-    public async Task HandleSuccessfulPayment()
+    public async Task HandleSuccessfulPayment(WebhookEvent event)
     {
         try 
         {
             var userId = _httpContextAccessor.GetUserId();
             var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId.ToString());
 
+            var order = await _dbContext.Orders.FirstOrDefaultAsync(o => o.PaymentPartnerOrderId == event.Resource.Id)
+            
             if (user is null)
             {
                 throw new Exception("User not found");
@@ -44,7 +48,7 @@ public class CreditManager : ICreditManager
 
             using var transaction = _dbContext.Database.BeginTransaction();
 
-            // user.CreditAmount += userTransaction.CreditAmount;
+            user.CreditAmount += UserTransaction.CreditAmount;
 
             transaction.Commit();
         }

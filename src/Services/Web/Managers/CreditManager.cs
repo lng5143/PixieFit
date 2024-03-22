@@ -13,7 +13,7 @@ namespace PixieFit.Web.Business.Managers;
 
 public interface ICreditManager
 {
-    Task HandleSuccessfulPayment(WebhookEvent event);
+    Task HandleSuccessfulPayment(WebhookEvent e);
 }
 
 public class CreditManager : ICreditManager
@@ -32,14 +32,14 @@ public class CreditManager : ICreditManager
         _httpContextAccessor = httpContextAccessor;
     }
 
-    public async Task HandleSuccessfulPayment(WebhookEvent event)
+    public async Task HandleSuccessfulPayment(WebhookEvent e)
     {
         try 
         {
             var userId = _httpContextAccessor.GetUserId();
             var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId.ToString());
 
-            var order = await _dbContext.Orders.FirstOrDefaultAsync(o => o.PaymentPartnerOrderId == event.Resource.Id)
+            var order = await _dbContext.Orders.FirstOrDefaultAsync(o => o.PaymentPartnerOrderId == e.Resource.Id);
             
             if (user is null)
             {
@@ -48,7 +48,8 @@ public class CreditManager : ICreditManager
 
             using var transaction = _dbContext.Database.BeginTransaction();
 
-            user.CreditAmount += UserTransaction.CreditAmount;
+            user.CreditAmount += order.CreditPackage.Credits;
+            order.PaymentStatus = PaymentStatus.COMPLETED;
 
             transaction.Commit();
         }
@@ -56,7 +57,5 @@ public class CreditManager : ICreditManager
         {
             throw new Exception("Fail to handle payment");
         }
-
-
     }
 }

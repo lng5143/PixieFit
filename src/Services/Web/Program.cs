@@ -40,9 +40,13 @@ builder.Services.AddIdentityServer()
     .AddInMemoryApiScopes(Config.ApiScopes)
     .AddInMemoryClients(Config.Clients);
 
+builder.Services.AddHealthChecks();
+
 var app = builder.Build();
 
 app.UseStaticFiles();
+
+app.MapHealthChecks("/healthz");
 
 app.MapControllerRoute(
     name: "default",

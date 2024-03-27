@@ -19,4 +19,4 @@ WORKDIR /app
 COPY --from=build /app/publish .
 #CMD ["sh"]
 ENTRYPOINT ["dotnet", "Web.dll"]
-CMD tail -f /dev/null
+HEALTHCHECK CMD curl --fail http://localhost:8080/healthz || exit

@@ -1,3 +1,10 @@
-secrets:
+version: '3.7'
+
+services:
   web:
-  core:
+    network_mode: bridge
+    build:
+      context: .
+      dockerfile: src/Services/Web/Dockerfile
+    ports:
+      - "5000:5000"
